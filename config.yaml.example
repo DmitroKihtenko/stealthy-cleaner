@@ -1,0 +1,14 @@
+# MongoDB client configuration
+mongo_db:
+  # MongoDB connection string
+  url: "mongodb://backend:password@localhost:27017"
+  # MongoDB target database for cleanup
+  database: "stealthy-backend"
+  # MongoDB all connections timeout in seconds
+  seconds_timeout: 3
+
+# Cleanup service configuration
+cleanup:
+  # Time in seconds between iterations of process of deleting files that
+  # have expired
+  seconds_period: 60
