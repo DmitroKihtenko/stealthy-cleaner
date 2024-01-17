@@ -1,0 +1,13 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+pymongo = "4.6.1"
+python-json-logger = "2.0.7"
+pydantic = "2.5.3"
+pyyaml = "6.0.1"
+
+[requires]
+python_version = "3.11"

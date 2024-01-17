@@ -1,0 +1,7 @@
+mongo_db:
+  url: "mongodb://backend:password@localhost:27017"
+  database: "stealthy-backend"
+  seconds_timeout: 3
+
+cleanup:
+  seconds_period: 60
