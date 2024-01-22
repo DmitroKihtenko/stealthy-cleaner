@@ -12,3 +12,5 @@ cleanup:
   # Time in seconds between iterations of process of deleting files that
   # have expired
   seconds_period: 60
+  # Amount of files to remove in one request to database
+  remove_batch_size: 10
