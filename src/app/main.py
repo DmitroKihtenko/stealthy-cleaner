@@ -1,5 +1,5 @@
 import logging.config
-from datetime import datetime
+from datetime import datetime, timezone
 from time import sleep
 
 import yaml
@@ -9,10 +9,9 @@ from pymongo.database import Database
 
 from app.settings import (
     Settings,
-    TARGET_CRITERIA,
-    TARGET_COLLECTIONS,
+    EXPIRATION_CRITERIA,
     CONFIG_FILE,
-    LOGS_CONFIG_FILE
+    LOGS_CONFIG_FILE, ID_CRITERIA, METADATA_COLLECTION, TARGET_COLLECTION
 )
 
 
@@ -66,21 +65,50 @@ def get_message_from_error(error: Exception) -> str:
         return str(error.args)
 
 
-def clean_from_database(db: Database):
-    now_timestamp = datetime.utcnow().timestamp()
+def clean_from_database(db: Database, settings: Settings):
+    now_timestamp = datetime.now(timezone.utc).timestamp()
 
     try:
         logger.info("Cleaning files")
 
-        for collection in TARGET_COLLECTIONS:
-            result = db[collection].delete_many(
-                {TARGET_CRITERIA: {'$lte': now_timestamp}}
-            )
-            if result.deleted_count > 0:
-                logger.info("Data deleted", extra={
-                    "count": result.deleted_count,
-                    "collection": collection
-                })
+        metadata_to_remove = db[METADATA_COLLECTION].find(
+            {EXPIRATION_CRITERIA: {"$lte": now_timestamp}},
+            projection={ID_CRITERIA: 1}
+        )
+        files_identifiers = [[]]
+        batch_to_remove = 0
+        for metadata in metadata_to_remove:
+            if len(files_identifiers[
+                       batch_to_remove
+                   ]) >= settings.cleanup.remove_batch_size:
+                batch_to_remove += 1
+                files_identifiers.append([])
+            files_identifiers[batch_to_remove].append(metadata[ID_CRITERIA])
+
+        deleted_from_metadata = 0
+        deleted_from_target = 0
+
+        for batch in files_identifiers:
+            result = db[METADATA_COLLECTION].delete_many({
+                ID_CRITERIA: {"$in": batch}
+            })
+            deleted_from_metadata += result.deleted_count
+
+            result = db[TARGET_COLLECTION].delete_many({
+                ID_CRITERIA: {"$in": batch}
+            })
+            deleted_from_target += result.deleted_count
+
+        if deleted_from_metadata > 0:
+            logger.info("Data deleted", extra={
+                "count": deleted_from_metadata,
+                "collection": METADATA_COLLECTION
+            })
+        if deleted_from_target > 0:
+            logger.info("Data deleted", extra={
+                "count": deleted_from_metadata,
+                "collection": TARGET_COLLECTION
+            })
     except Exception as e:
         logger.error("Database cleanup error", extra={
             "error_type": type(e).__name__,
@@ -93,7 +121,7 @@ def do_cleanup(db: Database, settings: Settings):
 
     try:
         while True:
-            clean_from_database(db)
+            clean_from_database(db, settings)
             sleep(settings.cleanup.seconds_period)
     finally:
         logger.info("Cleanup loop stopped")

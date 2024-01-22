@@ -5,3 +5,4 @@ mongo_db:
 
 cleanup:
   seconds_period: 60
+  remove_batch_size: 10
