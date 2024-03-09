@@ -29,7 +29,7 @@ class MongoDB(BaseModel):
 
 
 class Cleanup(BaseModel):
-    seconds_period: int = Field(
+    seconds_period: float = Field(
         title="Seconds period",
         description="Time in seconds between iterations of process of "
                     "deleting files that have expired",

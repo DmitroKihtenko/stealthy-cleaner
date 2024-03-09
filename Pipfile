@@ -9,5 +9,8 @@ python-json-logger = "2.0.7"
 pydantic = "2.5.3"
 pyyaml = "6.0.1"
 
+[dev-packages]
+pytest = "8.0.2"
+
 [requires]
 python_version = "3.11"

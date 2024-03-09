@@ -1,5 +1,6 @@
 import logging.config
 from datetime import datetime, timezone
+from functools import lru_cache
 from time import sleep
 
 import yaml
@@ -11,7 +12,10 @@ from app.settings import (
     Settings,
     EXPIRATION_CRITERIA,
     CONFIG_FILE,
-    LOGS_CONFIG_FILE, ID_CRITERIA, METADATA_COLLECTION, TARGET_COLLECTION
+    LOGS_CONFIG_FILE,
+    ID_CRITERIA,
+    METADATA_COLLECTION,
+    TARGET_COLLECTION,
 )
 
 
@@ -30,6 +34,7 @@ def load_logging_config():
         raise e
 
 
+@lru_cache
 def get_settings() -> Settings:
     logger.info("Loading configuration", extra={
         "file": CONFIG_FILE
