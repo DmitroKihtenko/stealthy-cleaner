@@ -1,0 +1,8 @@
+version: '3.7'
+
+services:
+  test:
+    image: stealthy-cleaner:test-latest
+    build:
+      context: .
+      target: test_application
